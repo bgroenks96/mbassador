@@ -1,5 +1,7 @@
 package net.engio.mbassy.bus;
 
+import java.util.concurrent.TimeUnit;
+
 import net.engio.mbassy.bus.common.IMessageBus;
 import net.engio.mbassy.bus.config.BusConfiguration;
 import net.engio.mbassy.bus.config.Feature;
@@ -7,8 +9,6 @@ import net.engio.mbassy.bus.config.IBusConfiguration;
 import net.engio.mbassy.bus.error.IPublicationErrorHandler;
 import net.engio.mbassy.bus.error.PublicationError;
 import net.engio.mbassy.bus.publication.SyncAsyncPostCommand;
-
-import java.util.concurrent.TimeUnit;
 
 
 public class MBassador<T> extends AbstractSyncAsyncMessageBus<T, SyncAsyncPostCommand<T>> implements IMessageBus<T, SyncAsyncPostCommand<T>> {
@@ -29,7 +29,7 @@ public class MBassador<T> extends AbstractSyncAsyncMessageBus<T, SyncAsyncPostCo
      *
      * @param errorHandler
      */
-    public MBassador(IPublicationErrorHandler errorHandler) {
+    public MBassador(final IPublicationErrorHandler errorHandler) {
         super(new BusConfiguration().addFeature(Feature.SyncPubSub.Default())
                                     .addFeature(Feature.AsynchronousHandlerInvocation.Default())
                                     .addFeature(Feature.AsynchronousMessageDispatch.Default())
@@ -41,7 +41,7 @@ public class MBassador<T> extends AbstractSyncAsyncMessageBus<T, SyncAsyncPostCo
      *
      * @param configuration
      */
-    public MBassador(IBusConfiguration configuration) {
+    public MBassador(final IBusConfiguration configuration) {
         super(configuration);
     }
 
@@ -49,12 +49,22 @@ public class MBassador<T> extends AbstractSyncAsyncMessageBus<T, SyncAsyncPostCo
 
 
 
-    public IMessagePublication publishAsync(T message) {
-        return addAsynchronousPublication(createMessagePublication(message));
+    public IMessagePublication publishAsync(final T message) {
+	final IMessagePublication publication = createMessagePublication(message);
+	if (isPaused()) {
+	    super.enqueueMessageOnPause(message);
+	    return publication;
+	}
+        return addAsynchronousPublication(publication);
     }
 
-    public IMessagePublication publishAsync(T message, long timeout, TimeUnit unit) {
-        return addAsynchronousPublication(createMessagePublication(message), timeout, unit);
+    public IMessagePublication publishAsync(final T message, final long timeout, final TimeUnit unit) {
+	final IMessagePublication publication = createMessagePublication(message);
+	if (isPaused()) {
+	    super.enqueueMessageOnPause(message);
+	    return publication;
+	}
+        return addAsynchronousPublication(publication, timeout, unit);
     }
 
 
@@ -64,11 +74,16 @@ public class MBassador<T> extends AbstractSyncAsyncMessageBus<T, SyncAsyncPostCo
      *
      * @param message
      */
-    public void publish(T message) {
+    @Override
+    public void publish(final T message) {
+	if (isPaused()) {
+	    super.enqueueMessageOnPause(message);
+	    return;
+	}
         try {
-            IMessagePublication publication = createMessagePublication(message);
+            final IMessagePublication publication = createMessagePublication(message);
             publication.execute();
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             handlePublicationError(new PublicationError()
                     .setMessage("Error during publication of message")
                     .setCause(e)
@@ -79,7 +94,7 @@ public class MBassador<T> extends AbstractSyncAsyncMessageBus<T, SyncAsyncPostCo
 
 
     @Override
-    public SyncAsyncPostCommand<T> post(T message) {
+    public SyncAsyncPostCommand<T> post(final T message) {
         return new SyncAsyncPostCommand<T>(this, message);
     }
 
