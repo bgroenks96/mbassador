@@ -26,3 +26,4 @@ release.properties
 /.classpath
 /.project
 /build/
+/bin/

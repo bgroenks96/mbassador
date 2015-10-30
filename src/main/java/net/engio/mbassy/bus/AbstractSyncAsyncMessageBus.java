@@ -20,7 +20,7 @@ import net.engio.mbassy.bus.publication.ISyncAsyncPublicationCommand;
  * @param <P> The publication commands this bus supports depend on P
  */
 public abstract class AbstractSyncAsyncMessageBus<T, P extends ISyncAsyncPublicationCommand>
-        extends AbstractPubSubPauseSupport<T> implements IMessageBus<T, P> {
+        extends AbstractPubSubSupport<T> implements IMessageBus<T, P> {
 
     // executor for asynchronous message handlers
     private final ExecutorService executor;
