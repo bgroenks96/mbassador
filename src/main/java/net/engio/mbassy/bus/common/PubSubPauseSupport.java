@@ -11,10 +11,17 @@ public interface PubSubPauseSupport<T> extends PubSubSupport<T> {
 
     /**
      * Resumes event publishing. All messages enqueued since the first call to {@link #pause()} will be subsequently
-     * flushed and published in the order that they arrived. Does nothing if the runtime is not currently in a paused
+     * flushed and published <b>synchronously</b> in the order that they arrived. Does nothing if the runtime is not currently in a paused
      * state from a call to {@link #pause()}.
      */
     void resume();
+    
+    /**
+     * Resumes event publishing. All messages enqueued since the first call to {@link #pause()} will be subsequently
+     * flushed and published <b>asynchronously</b> in the order that they arrived. Does nothing if the runtime is not currently in a paused
+     * state from a call to {@link #pause()}.
+     */
+    void resumeAsync();
 
     /**
      * @return true if this PubSubPauseSupport is currently paused, false otherwise.

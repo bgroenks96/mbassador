@@ -17,12 +17,15 @@ public class SuspendableMBassador<T> extends AbstractSyncAsyncMessageBus<T, Sync
 
     private final AtomicBoolean paused = new AtomicBoolean();
     
-    protected SuspendableMBassador(IBusConfiguration configuration) {
+    public SuspendableMBassador(final MBassador<T> internalBus, final IBusConfiguration configuration) {
 	super(configuration);
 	
-	this.internalBus = new MBassador<>(configuration);
+	this.internalBus = internalBus;
     }
-
+    
+    public SuspendableMBassador(final IBusConfiguration configuration) {
+	this(new MBassador<T>(configuration), configuration);
+    }
 
     public IMessagePublication publishAsync(final T message) {
 	final IMessagePublication publication = createMessagePublication(message);
@@ -70,6 +73,16 @@ public class SuspendableMBassador<T> extends AbstractSyncAsyncMessageBus<T, Sync
 	paused.set(false);
 	while (!paused.get() && msgPauseQueue.size() > 0) {
 	    publish (msgPauseQueue.poll());
+	}
+    }
+    
+    @Override
+    public void resumeAsync() {
+	if (!paused.get()) return;
+
+	paused.set(false);
+	while (!paused.get() && msgPauseQueue.size() > 0) {
+	    publishAsync (msgPauseQueue.poll());
 	}
     }
 

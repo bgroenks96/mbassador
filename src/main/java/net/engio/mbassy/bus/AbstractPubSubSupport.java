@@ -1,5 +1,14 @@
 package net.engio.mbassy.bus;
 
+import static net.engio.mbassy.bus.config.IBusConfiguration.Properties.BusId;
+import static net.engio.mbassy.bus.config.IBusConfiguration.Properties.PublicationErrorHandlers;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import net.engio.mbassy.bus.common.DeadMessage;
 import net.engio.mbassy.bus.common.PubSubSupport;
 import net.engio.mbassy.bus.config.ConfigurationError;
@@ -9,11 +18,6 @@ import net.engio.mbassy.bus.error.IPublicationErrorHandler;
 import net.engio.mbassy.bus.error.PublicationError;
 import net.engio.mbassy.subscription.Subscription;
 import net.engio.mbassy.subscription.SubscriptionManager;
-
-import java.util.*;
-
-import static net.engio.mbassy.bus.config.IBusConfiguration.Properties.BusId;
-import static net.engio.mbassy.bus.config.IBusConfiguration.Properties.PublicationErrorHandlers;
 
 /**
  * The base class for all message bus implementations.
